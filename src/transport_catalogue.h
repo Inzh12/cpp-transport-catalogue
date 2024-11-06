@@ -36,17 +36,17 @@ namespace transport_catalogue {
         void AddBus(std::string_view title, const std::vector<std::string_view>& stops);
 
         const Bus* GetBus(std::string_view title) const;
-        const std::set<const Bus*, BusPoinerComapare>* GetBusesOfStop(std::string_view title) const;
+        const std::set<const Bus*, BusPoinerComapare>& GetBusesOfStop(std::string_view title) const;
         const Stop* GetStop(std::string_view title) const;
 
     private:
         std::deque<Stop> stops_;
         std::deque<Bus> buses_;
 
-        std::unordered_map<std::string, const Stop*> stops_index_;
-        std::unordered_map<std::string, const Bus*> buses_index_;
+        std::unordered_map<std::string_view, const Stop*> stops_index_;
+        std::unordered_map<std::string_view, const Bus*> buses_index_;
         
-        std::unordered_map<std::string, std::set<const Bus*, BusPoinerComapare>> stop_to_buses_;
+        std::unordered_map<std::string_view, std::set<const Bus*, BusPoinerComapare>> stop_to_buses_;
     };
 }
 

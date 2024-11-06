@@ -52,14 +52,14 @@ namespace transport_catalogue::io {
         }
 
         auto buses = tansport_catalogue_.GetBusesOfStop(stop->title);
-        if(!buses) {
+        if(buses.empty()) {
             output_ << "no buses"sv << std::endl;
             return;
         }
 
         output_ << "buses "sv;
 
-        for (const Bus* bus : *buses) {
+        for (const Bus* bus : buses) {
             output_ << bus->title << " "sv;
         }
 
