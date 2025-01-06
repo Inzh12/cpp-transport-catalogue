@@ -9,10 +9,10 @@ namespace transport_catalogue::io {
     /**
      * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
      */
-    geo::Coordinates ParseCoordinates(std::string_view str) {
+    geo::Coordinates ParseCoordinates(std::string_view str, std::string::size_type& pos) {
         static const double nan = std::nan("");
 
-        auto not_space = str.find_first_not_of(' ');
+        auto not_space = str.find_first_not_of(' ', pos);
         auto comma = str.find(',');
 
         if (comma == str.npos) {
@@ -20,11 +20,34 @@ namespace transport_catalogue::io {
         }
 
         auto not_space2 = str.find_first_not_of(' ', comma + 1);
+        auto end = str.find_first_of(",\n", not_space2);
 
         double lat = std::stod(std::string(str.substr(not_space, comma - not_space)));
-        double lng = std::stod(std::string(str.substr(not_space2)));
+        double lng = std::stod(std::string(str.substr(not_space2, end - not_space2)));
+
+        pos = end;
 
         return {lat, lng};
+    }
+
+    std::vector<std::pair<int, std::string>> ParseDistances(std::string_view str, std::string::size_type& pos) {
+        std::vector<std::pair<int, std::string>> dists_with_stops;
+
+        while (pos != std::string::npos) {
+            auto not_space = str.find_first_not_of(" ,", pos);
+            auto separator = str.find("m to ", pos);
+            auto not_space2 = str.find_first_not_of(' ', separator + 5);
+            auto separator2 = str.find_first_of(",\n", not_space2);
+
+            int dist = std::stoi(std::string(str.substr(not_space, separator - not_space)));
+            std::string stop = std::string(str.substr(not_space2, separator2 - not_space2));
+
+            dists_with_stops.push_back({dist, stop});
+
+            pos = separator2;
+        }
+
+        return dists_with_stops;
     }
 
     std::string_view Trim(std::string_view string) {
@@ -107,9 +130,12 @@ namespace transport_catalogue::io {
 
         for (const CommandDescription& command : commands) {
             if (command.command == "Stop") {
-                catalogue.AddStop(command.id, ParseCoordinates(command.description));
+                std::string::size_type pos = 0;
+                auto coords = ParseCoordinates(command.description, pos);
+                auto dists = ParseDistances(command.description, pos);
+                catalogue.AddStop(command.id, coords, dists);
             } else {
-                 catalogue.AddBus(command.id, ParseRoute(command.description));
+                catalogue.AddBus(command.id, ParseRoute(command.description));
             }
         }
     }

@@ -16,7 +16,8 @@ namespace transport_catalogue {
         std::vector<const Stop*> stops;
         int stops_amount = 0;
         int uniq_stops_amount = 0;
-        double route_length = 0;
+        int route_length = 0;
+        double curvature = 0;
     };
 
     struct Stop {
@@ -32,7 +33,9 @@ namespace transport_catalogue {
 
     class TransportCatalogue {
     public:
-        void AddStop(std::string_view title, geo::Coordinates coords);
+        void AddStop(std::string_view title, geo::Coordinates coords,
+                     std::vector<std::pair<int, std::string>>& dists_with_stop);
+
         void AddBus(std::string_view title, const std::vector<std::string_view>& stops);
 
         const Bus* GetBus(std::string_view title) const;
@@ -47,6 +50,7 @@ namespace transport_catalogue {
         std::unordered_map<std::string_view, const Bus*> buses_index_;
         
         std::unordered_map<std::string_view, std::set<const Bus*, BusPoinerComapare>> stop_to_buses_;
+        std::unordered_map<std::string, std::unordered_map<std::string, int>> stop_to_distances_;
     };
 }
 

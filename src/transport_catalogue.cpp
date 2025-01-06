@@ -1,17 +1,25 @@
 #include "transport_catalogue.h"
 #include "geo.h"
-#include <optional>
+
 #include <unordered_set>
+#include <span>
 
 namespace transport_catalogue {
-    void TransportCatalogue::AddStop(std::string_view title, geo::Coordinates coords) {
+    void TransportCatalogue::AddStop(std::string_view title, geo::Coordinates coords,
+                                 std::vector<std::pair<int, std::string>>& dists_with_stops) {
+
         const Stop* stop = &*stops_.insert(stops_.end(), {std::string(title), coords});
         stops_index_.insert({stop->title, stop});
         stop_to_buses_.insert({stop->title, {}});
+
+        auto& current_stop_distances = stop_to_distances_[stop->title];
+        for (const auto& [dist, next_stop] : dists_with_stops) {
+            stop_to_distances_[next_stop].insert({stop->title, dist});
+            current_stop_distances[next_stop] = dist;
+        }
     }
 
     void TransportCatalogue::AddBus(std::string_view title, const std::vector<std::string_view> &stops) {
-        std::optional<geo::Coordinates> prev_coords;
         std::unordered_set<std::string_view> uniq_stops;
         
         uniq_stops.reserve(stops.size());
@@ -20,20 +28,26 @@ namespace transport_catalogue {
         bus->title = title;
         buses_index_.insert({bus->title, bus});
 
-        for (const std::string_view stop_title : stops) {
-            auto stop_it = stops_index_.at(std::string(stop_title));
+        double geo_length = 0;
+        auto prev_stop = stops_index_.at(std::string(stops.front()));
+        bus->stops.push_back(prev_stop);
+        uniq_stops.insert(prev_stop->title);
 
-            bus->stops.push_back(stop_it);
-            stop_to_buses_[stop_it->title].insert(bus);
+        for (const std::string_view stop_title : std::span(stops.begin() + 1, stops.end())) {
+            auto stop = stops_index_.at(std::string(stop_title));
+
+            bus->stops.push_back(stop);
+            stop_to_buses_[stop->title].insert(bus);
             uniq_stops.insert(stop_title);
 
-            if(prev_coords.has_value()) {
-                bus->route_length += ComputeDistance(prev_coords.value(), stop_it->coords);
-            }
+            geo_length += ComputeDistance(prev_stop->coords, stop->coords);
+            bus->route_length += stop_to_distances_.at(prev_stop->title)
+                                     .at(stop->title);
 
-            prev_coords = stop_it->coords;
+            prev_stop = stop;
         }
 
+        bus->curvature = bus->route_length / geo_length;
         bus->stops_amount = bus->stops.size();
         bus->uniq_stops_amount = uniq_stops.size();
     }

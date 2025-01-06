@@ -37,7 +37,10 @@ namespace transport_catalogue::io {
                 << std::to_string(bus->uniq_stops_amount)
                 << " unique stops, "sv
                 << std::to_string(bus->route_length)
-                << " route length"sv << std::endl;
+                << " route length, "sv
+                << std::to_string(bus->curvature)
+                << " curvature"sv
+                << std::endl;
     }
 
     void StatReader::PrintStopStat(std::string_view stop_id)
