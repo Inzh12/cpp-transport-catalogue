@@ -1,7 +1,7 @@
 #include "stat_reader.h"
-#include "input_reader.h"
-#include <stdexcept>
+
 #include <iostream>
+#include <set>
 
 using namespace std::literals::string_view_literals;
 
@@ -23,8 +23,8 @@ namespace transport_catalogue::io {
 
     void StatReader::PrintBusStat(std::string_view bus_id)
     {
-        const Bus* bus = tansport_catalogue_.GetBus(bus_id);
-        if(!bus) {
+        const BusStats* stats = tansport_catalogue_.GetBusStats(bus_id);
+        if(!stats) {
             output_ << "Bus "sv << bus_id << ": not found"sv << std::endl;
             return;
         } 
@@ -32,13 +32,13 @@ namespace transport_catalogue::io {
         output_ << "Bus "sv
                 << bus_id
                 << ": "sv
-                << std::to_string(bus->stops_amount)
+                << std::to_string(stats->stops_amount)
                 << " stops on route, "sv
-                << std::to_string(bus->uniq_stops_amount)
+                << std::to_string(stats->uniq_stops_amount)
                 << " unique stops, "sv
-                << std::to_string(bus->route_length)
+                << std::to_string(stats->route_length)
                 << " route length, "sv
-                << std::to_string(bus->curvature)
+                << std::to_string(stats->curvature)
                 << " curvature"sv
                 << std::endl;
     }
@@ -55,6 +55,12 @@ namespace transport_catalogue::io {
         }
 
         auto buses = tansport_catalogue_.GetBusesOfStop(stop->title);
+
+        std::set<std::string> buses_titles;
+        for (auto bus : buses) {
+            buses_titles.insert(bus->title);
+        }
+
         if(buses.empty()) {
             output_ << "no buses"sv << std::endl;
             return;
@@ -62,8 +68,8 @@ namespace transport_catalogue::io {
 
         output_ << "buses "sv;
 
-        for (const Bus* bus : buses) {
-            output_ << bus->title << " "sv;
+        for (auto bus_title : buses_titles) {
+            output_ << bus_title << " "sv;
         }
 
         output_ << std::endl;

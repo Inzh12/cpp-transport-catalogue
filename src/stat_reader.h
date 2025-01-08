@@ -1,9 +1,10 @@
 #pragma once
 
+#include "transport_catalogue.h"
+
 #include <iosfwd>
 #include <string_view>
 
-#include "transport_catalogue.h"
 
 namespace transport_catalogue::io {
     class StatReader {

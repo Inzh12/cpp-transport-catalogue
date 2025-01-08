@@ -30,8 +30,8 @@ namespace transport_catalogue::io {
         return {lat, lng};
     }
 
-    std::vector<std::pair<int, std::string>> ParseDistances(std::string_view str, std::string::size_type& pos) {
-        std::vector<std::pair<int, std::string>> dists_with_stops;
+    std::map<std::string, int> ParseDistances(std::string_view str, std::string::size_type& pos) {
+        std::map<std::string, int> stop_to_dist;
 
         while (pos != std::string::npos) {
             auto not_space = str.find_first_not_of(" ,", pos);
@@ -42,12 +42,12 @@ namespace transport_catalogue::io {
             int dist = std::stoi(std::string(str.substr(not_space, separator - not_space)));
             std::string stop = std::string(str.substr(not_space2, separator2 - not_space2));
 
-            dists_with_stops.push_back({dist, stop});
+            stop_to_dist.insert({stop, dist});
 
             pos = separator2;
         }
 
-        return dists_with_stops;
+        return stop_to_dist;
     }
 
     std::string_view Trim(std::string_view string) {
@@ -133,7 +133,8 @@ namespace transport_catalogue::io {
                 std::string::size_type pos = 0;
                 auto coords = ParseCoordinates(command.description, pos);
                 auto dists = ParseDistances(command.description, pos);
-                catalogue.AddStop(command.id, coords, dists);
+                catalogue.AddStop(command.id, coords);
+                catalogue.SetNearbyStopsDistances(command.id, dists);
             } else {
                 catalogue.AddBus(command.id, ParseRoute(command.description));
             }
