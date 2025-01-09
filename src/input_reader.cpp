@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+#include <map>
 
 
 namespace transport_catalogue::io {
@@ -138,6 +139,8 @@ namespace transport_catalogue::io {
                 for (const auto& [stop, dist] : dists) {
                     catalogue.SetStopsDistance(command.id, stop, dist);
                 }
+
+
             } else {
                 catalogue.AddBus(command.id, ParseRoute(command.description));
             }

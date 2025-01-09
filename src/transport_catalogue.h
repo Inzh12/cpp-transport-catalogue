@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <deque>
-#include <map>
 
 namespace transport_catalogue {
 
@@ -52,7 +51,6 @@ namespace transport_catalogue {
     private:
         std::deque<Stop> stops_;
         std::deque<Bus> buses_;
-        std::unordered_map<const Bus*, BusStats> bus_to_stats_;
 
         std::unordered_map<std::string_view, const Stop*> stops_index_;
         std::unordered_map<std::string_view, const Bus*> buses_index_;
