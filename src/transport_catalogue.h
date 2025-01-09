@@ -41,13 +41,12 @@ namespace transport_catalogue {
     public:
         void AddStop(std::string_view title, geo::Coordinates coords);
 
-        void SetNearbyStopsDistances(std::string_view title,
-                                    std::map<std::string, int>& stop_to_dist);
+        void SetStopsDistance(std::string_view stop1, std::string_view stop2, int distance);
 
         void AddBus(std::string_view title, const std::vector<std::string_view>& stops);
 
         const Bus* GetBus(std::string_view title) const;
-        const BusStats* GetBusStats(std::string_view title) const;
+        BusStats GetBusStats(std::string_view title) const;
         const std::unordered_set<const Bus*>& GetBusesOfStop(std::string_view title) const;
         const Stop* GetStop(std::string_view title) const;
     private:

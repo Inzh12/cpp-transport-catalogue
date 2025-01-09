@@ -23,8 +23,8 @@ namespace transport_catalogue::io {
 
     void StatReader::PrintBusStat(std::string_view bus_id)
     {
-        const BusStats* stats = tansport_catalogue_.GetBusStats(bus_id);
-        if(!stats) {
+        BusStats stats = tansport_catalogue_.GetBusStats(bus_id);
+        if(stats.stops_amount == 0) {
             output_ << "Bus "sv << bus_id << ": not found"sv << std::endl;
             return;
         } 
@@ -32,13 +32,13 @@ namespace transport_catalogue::io {
         output_ << "Bus "sv
                 << bus_id
                 << ": "sv
-                << std::to_string(stats->stops_amount)
+                << std::to_string(stats.stops_amount)
                 << " stops on route, "sv
-                << std::to_string(stats->uniq_stops_amount)
+                << std::to_string(stats.uniq_stops_amount)
                 << " unique stops, "sv
-                << std::to_string(stats->route_length)
+                << std::to_string(stats.route_length)
                 << " route length, "sv
-                << std::to_string(stats->curvature)
+                << std::to_string(stats.curvature)
                 << " curvature"sv
                 << std::endl;
     }

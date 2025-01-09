@@ -134,7 +134,10 @@ namespace transport_catalogue::io {
                 auto coords = ParseCoordinates(command.description, pos);
                 auto dists = ParseDistances(command.description, pos);
                 catalogue.AddStop(command.id, coords);
-                catalogue.SetNearbyStopsDistances(command.id, dists);
+
+                for (const auto& [stop, dist] : dists) {
+                    catalogue.SetStopsDistance(command.id, stop, dist);
+                }
             } else {
                 catalogue.AddBus(command.id, ParseRoute(command.description));
             }
