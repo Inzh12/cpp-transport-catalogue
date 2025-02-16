@@ -18,6 +18,13 @@ public:
     void PrintStats(std::ostream& output);
     void SetRenderSettings();
 private:
+    void FillStops(const json::Array& base_requests);
+    void FillBuses(const json::Array& base_requests);
+    json::Dict MakeStat(const json::Dict& stat_request);
+    json::Dict MakeStopStat(const json::Dict& stat_request);
+    json::Dict MakeBusStat(const json::Dict& stat_request);
+    json::Dict MakeMapStat(const json::Dict& stat_request);
+
     svg::Color ReadColor(const json::Node& color_node);
 
     TransportCatalogue& catalogue_;

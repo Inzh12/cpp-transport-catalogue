@@ -7,6 +7,8 @@
 
 namespace transport_catalogue {
 
+class SphereProjector;
+
 class MapRenderer {
 public:
     struct Offset
@@ -31,8 +33,26 @@ public:
     };
 
     void SetSettings(Settings settings);
-    std::string Render(const std::deque<Bus>& buses, const std::vector<const Stop*> stops) const;
+    std::string Render(const std::vector<const Bus*>& buses, const std::vector<const Stop*> stops) const;
 private:
+    SphereProjector MakeProjector(const std::vector<const Bus*>& buses) const;
+
+    void RenderBusesLines(svg::Document& doc,
+                          const std::vector<const Bus*> buses,
+                          const SphereProjector& projector) const;
+
+    void RenderBusesTitles(svg::Document& doc,
+                           const std::vector<const Bus*> buses,
+                           const SphereProjector& projector) const;
+
+    void RenderStops(svg::Document& doc,
+                     const std::vector<const Stop*> stops,
+                     const SphereProjector& projector) const;
+
+    void RenderStopsTitles(svg::Document& doc,
+                           const std::vector<const Stop*> stops,
+                           const SphereProjector& projector) const;
+
     Settings settings_;
 };
 

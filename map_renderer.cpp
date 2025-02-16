@@ -79,31 +79,38 @@ void MapRenderer::SetSettings(Settings settings) {
     settings_ = settings;
 }
 
-std::string MapRenderer::Render(const std::deque<Bus>& buses, const std::vector<const Stop*> stops) const
-{
+std::string MapRenderer::Render(const std::vector<const Bus*>& buses,
+                                const std::vector<const Stop*> stops) const {
+
     svg::Document doc;
+    SphereProjector projector = MakeProjector(buses);
 
-    std::vector<const Bus*> sorted_buses;
-    sorted_buses.reserve(buses.size());
-    for (const Bus& bus : buses) {
-        sorted_buses.push_back(&bus);
-    }
+    RenderBusesLines(doc, buses, projector);
+    RenderBusesTitles(doc, buses, projector);
+    RenderStops(doc, stops, projector);
+    RenderStopsTitles(doc, stops, projector);
 
-    std::sort(sorted_buses.begin(), sorted_buses.end(), [](const Bus* lhs, const Bus* rhs){
-        return lhs->title < rhs->title;
-    });
+    std::stringstream render_result;
+    doc.Render(render_result);
+    return render_result.str();
+}
 
+SphereProjector MapRenderer::MakeProjector(const std::vector<const Bus *>& buses) const {
     std::vector<geo::Coordinates> coords;
-    for (const Bus* bus : sorted_buses) {
+    for (const Bus* bus : buses) {
         for (const Stop* stop : bus->stops) {
             coords.push_back(stop->coords);
         }
     }
 
-    SphereProjector projector(coords.begin(), coords.end(), settings_.width, settings_.height, settings_.padding);
+    return {coords.begin(), coords.end(), settings_.width, settings_.height, settings_.padding};
+}
 
+void MapRenderer::RenderBusesLines(svg::Document& doc,
+                                   const std::vector<const Bus *> buses,
+                                   const SphereProjector& projector) const {
     int palette_index = 0;
-    for (const Bus* bus : sorted_buses) {
+    for (const Bus* bus : buses) {
         if(bus->stops.empty()) {
             continue;
         }
@@ -127,9 +134,14 @@ std::string MapRenderer::Render(const std::deque<Bus>& buses, const std::vector<
 
         doc.Add(line);
     }
+}
 
-    palette_index = 0;
-    for (const Bus* bus : sorted_buses) {
+void MapRenderer::RenderBusesTitles(svg::Document &doc,
+                                    const std::vector<const Bus *> buses,
+                                    const SphereProjector &projector) const {
+
+    int palette_index = 0;
+    for (const Bus* bus : buses) {
         if (bus->stops.empty()) {
             continue;
         }
@@ -175,6 +187,11 @@ std::string MapRenderer::Render(const std::deque<Bus>& buses, const std::vector<
             doc.Add(bus_title2);
         }
     }
+}
+
+void MapRenderer::RenderStops(svg::Document &doc,
+                              const std::vector<const Stop*> stops,
+                              const SphereProjector &projector) const {
 
     for (const Stop* stop : stops) {
         svg::Circle circle;
@@ -183,6 +200,12 @@ std::string MapRenderer::Render(const std::deque<Bus>& buses, const std::vector<
               .SetFillColor("white");
         doc.Add(circle);
     }
+
+}
+
+void MapRenderer::RenderStopsTitles(svg::Document &doc,
+                                    const std::vector<const Stop *> stops,
+                                    const SphereProjector &projector) const {
 
     for (const Stop* stop : stops) {
         svg::Text stop_title;
@@ -206,10 +229,6 @@ std::string MapRenderer::Render(const std::deque<Bus>& buses, const std::vector<
         doc.Add(stop_title_base);
         doc.Add(stop_title);
     }
-
-    std::stringstream ss;
-    doc.Render(ss);
-    return ss.str();
 }
 
 }

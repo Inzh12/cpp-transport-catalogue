@@ -26,6 +26,18 @@ void RequestHandler::AddBus(std::string_view title, const std::vector<std::strin
 
 std::string RequestHandler::RenderMap() const {
 
+    const std::deque<Bus>& buses = db_.GetBuses();
+    std::vector<const Bus*> sorted_buses;
+    sorted_buses.reserve(buses.size());
+    for (const Bus& bus : buses) {
+        sorted_buses.push_back(&bus);
+    }
+
+    std::sort(sorted_buses.begin(), sorted_buses.end(), [](const Bus* lhs, const Bus* rhs){
+        return lhs->title < rhs->title;
+    });
+
+
     const std::deque<Stop>& stops = db_.GetStops();
     std::vector<const Stop*> sorted_stops_with_buses;
     for (const Stop& stop : stops) {
@@ -38,7 +50,7 @@ std::string RequestHandler::RenderMap() const {
         return lhs->title < rhs->title;
     });
 
-    return renderer_.Render(db_.GetBuses(), sorted_stops_with_buses);
+    return renderer_.Render(sorted_buses, sorted_stops_with_buses);
 }
 
 }
