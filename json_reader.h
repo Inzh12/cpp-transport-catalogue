@@ -3,7 +3,7 @@
 #include "transport_catalogue.h"
 #include "request_handler.h"
 #include "map_renderer.h"
-#include "json.h"
+#include "json_builder.h"
 
 namespace transport_catalogue {
 
@@ -20,10 +20,13 @@ public:
 private:
     void FillStops(const json::Array& base_requests);
     void FillBuses(const json::Array& base_requests);
-    json::Dict MakeStat(const json::Dict& stat_request);
-    json::Dict MakeStopStat(const json::Dict& stat_request);
-    json::Dict MakeBusStat(const json::Dict& stat_request);
-    json::Dict MakeMapStat(const json::Dict& stat_request);
+    //void SetRequestId(json::DictRef dict_ref, int id);
+    void AddStopStats(json::DictRef stat, const std::string& stop_name);
+    void AddBusStats(json::DictRef stat, const std::string& bus_name);
+    void AddMap(json::DictRef stat);
+    //json::Dict MakeStopStat(const json::Dict& stat_request);
+    //json::Dict MakeBusStat(const json::Dict& stat_request);
+    //json::Dict MakeMapStat(const json::Dict& stat_request);
 
     svg::Color ReadColor(const json::Node& color_node);
 

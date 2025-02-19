@@ -18,5 +18,6 @@ add_executable(
     map_renderer.cpp
     request_handler.cpp
     svg.cpp
+    json_builder.cpp
     transport_catalogue.cpp
 )
