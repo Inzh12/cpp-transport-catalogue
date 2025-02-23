@@ -28,14 +28,12 @@ void JsonReader::PrintStats(std::ostream& output) {
     const json::Array& stat_requests = root_.at("stat_requests").AsArray();
 
     json::Builder builder;
-    json::ArrayRef responces = builder.StartArray();
-
-    //json::Array requests{};
+    json::Builder::ArrayRef responces = builder.StartArray();
 
     for (const json::Node& stat_request_node : stat_requests) {
         const json::Dict& stat_request = stat_request_node.AsDict();
 
-        json::DictRef stat = responces
+        json::Builder::DictRef stat = responces
                 .StartDict()
                     .Key("request_id")
                     .Value(stat_request.at("id").AsInt());
@@ -43,18 +41,12 @@ void JsonReader::PrintStats(std::ostream& output) {
         if (stat_request.at("type") == "Stop") {
             const std::string& stop_name = stat_request.at("name").AsString();
             AddStopStats(stat, stop_name);
-            //requests.Value(MakeStopStat(stat_request));
-            //requests.push_back(MakeStopStat(stat_request));
         } else if (stat_request.at("type") == "Bus") {
             const std::string& bus_name = stat_request.at("name").AsString();
             AddBusStats(stat, bus_name);
-            //requests.Value(MakeBusStat(stat_request));
-            //requests.push_back(MakeBusStat(stat_request));
         } else if (stat_request.at("type") == "Map") {
             SetRenderSettings();
             AddMap(stat);
-            //requests.Value(MakeMapStat(stat_request));
-            //requests.push_back(MakeMapStat(stat_request));
         }
 
         stat.EndDict();
@@ -137,18 +129,13 @@ void JsonReader::FillBuses(const json::Array &base_requests) {
     }
 }
 
-// void JsonReader::SetRequestId(json::DictRef dict, int id) {
-//     //const int id = stat_request.at("id").AsInt();
-//     dict.Key("request_id").Value(id);
-// }
-
-void JsonReader::AddStopStats(json::DictRef stat, const std::string& stop_name) {
+void JsonReader::AddStopStats(json::Builder::DictRef stat, const std::string& stop_name) {
     if(!catalogue_.GetStop(stop_name)) {
         stat.Key("error_message").Value("not found");
         return;
     }
 
-    json::ArrayRef buses_array = stat.Key("buses").StartArray();
+    json::Builder::ArrayRef buses_array = stat.Key("buses").StartArray();
 
     std::set<std::string> buses;
     for (const auto bus_ptr : catalogue_.GetBusesOfStop(stop_name)) {
@@ -162,7 +149,7 @@ void JsonReader::AddStopStats(json::DictRef stat, const std::string& stop_name) 
     buses_array.EndArray();
 }
 
-void JsonReader::AddBusStats(json::DictRef stat, const std::string &bus_name) {
+void JsonReader::AddBusStats(json::Builder::DictRef stat, const std::string &bus_name) {
     BusStats stats;
     if(auto val = catalogue_.GetBusStats(bus_name)){
         stats = val.value();
@@ -177,70 +164,9 @@ void JsonReader::AddBusStats(json::DictRef stat, const std::string &bus_name) {
     stat.Key("unique_stop_count").Value(stats.uniq_stops_amount);
 }
 
-void JsonReader::AddMap(json::DictRef stat) {
+void JsonReader::AddMap(json::Builder::DictRef stat) {
     stat.Key("map").Value(request_hander_.RenderMap());
 }
-
-// void JsonReader::MakeStopStat(json::DictRef dict_ref, int id, const std::string& stop_name) {
-//     //json::Dict stat = MakeStat(stat_request);
-//     //SetRequestId(dict_ref, id);
-//     dict.Key("request_id").Value(id);
-
-//     //auto dict = json::Builder{}.StartDict();
-
-//     //const std::string& stop_name = stat_request.at("name").AsString();
-//     if(!catalogue_.GetStop(stop_name)) {
-//         dict_ref.Key("error_message").Value("not found");
-//         //stat["error_message"] = "not found";
-//         dict_ref.EndDict();
-//     }
-
-
-//     auto buses_array = dict_ref.Key("buses").StartArray();
-
-//     //json::Array buses_array;
-//     std::set<std::string> buses;
-//     for (const auto bus_ptr : catalogue_.GetBusesOfStop(stop_name)) {
-//         buses.insert(bus_ptr->title);
-//     }
-
-//     for (const std::string& bus_title : buses) {
-//         buses_array.Value(bus_title);
-//         //buses_array.push_back(bus_title);
-//     }
-
-//     //stat["buses"] = buses_array;
-
-//     return buses_array.EndArray().EndDict().Build().AsDict();
-// }
-
-// json::Dict JsonReader::MakeBusStat(const json::Dict &stat_request) {
-//     json::Dict stat = MakeStat(stat_request);
-
-//     const std::string& bus_name = stat_request.at("name").AsString();
-
-//     BusStats stats;
-//     if(auto val = catalogue_.GetBusStats(bus_name)){
-//         stats = val.value();
-//     } else {
-//         stat["error_message"] = "not found";
-//         return stat;
-//     }
-
-//     stat["curvature"] = stats.curvature;
-//     stat["route_length"] = stats.route_length;
-//     stat["stop_count"] = stats.stops_amount;
-//     stat["unique_stop_count"] = stats.uniq_stops_amount;
-
-//     return stat;
-// }
-
-// json::Dict JsonReader::MakeMapStat(const json::Dict &stat_request) {
-//     json::Dict stat = MakeStat(stat_request);
-//     stat["map"] = request_hander_.RenderMap();
-
-//     return stat;
-// }
 
 svg::Color JsonReader::ReadColor(const json::Node& color_node) {
     if (color_node.IsString()) {

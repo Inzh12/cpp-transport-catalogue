@@ -20,13 +20,9 @@ public:
 private:
     void FillStops(const json::Array& base_requests);
     void FillBuses(const json::Array& base_requests);
-    //void SetRequestId(json::DictRef dict_ref, int id);
-    void AddStopStats(json::DictRef stat, const std::string& stop_name);
-    void AddBusStats(json::DictRef stat, const std::string& bus_name);
-    void AddMap(json::DictRef stat);
-    //json::Dict MakeStopStat(const json::Dict& stat_request);
-    //json::Dict MakeBusStat(const json::Dict& stat_request);
-    //json::Dict MakeMapStat(const json::Dict& stat_request);
+    void AddStopStats(json::Builder::DictRef stat, const std::string& stop_name);
+    void AddBusStats(json::Builder::DictRef stat, const std::string& bus_name);
+    void AddMap(json::Builder::DictRef stat);
 
     svg::Color ReadColor(const json::Node& color_node);
 

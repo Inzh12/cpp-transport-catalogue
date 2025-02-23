@@ -3,8 +3,6 @@
 #include "domain.h"
 #include "svg.h"
 
-#include <deque>
-
 namespace transport_catalogue {
 
 class SphereProjector;

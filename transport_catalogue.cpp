@@ -13,11 +13,11 @@ void TransportCatalogue::AddStop(std::string_view title, geo::Coordinates coords
     stop_to_buses_.insert({stop->title, {}});
 }
 
-void TransportCatalogue::SetStopsDistance(std::string_view stop1,
-                                          std::string_view stop2,
+void TransportCatalogue::SetStopsDistance(std::string_view from,
+                                          std::string_view to,
                                           int distance) {
 
-    stops_to_distance_[{std::string(stop1), std::string(stop2)}] = distance;
+    stops_to_distance_[{std::string(from), std::string(to)}] = distance;
 }
 
 void TransportCatalogue::AddBus(std::string_view title, const std::vector<std::string_view> &stops, bool is_roundtrip) {
@@ -35,19 +35,23 @@ void TransportCatalogue::AddBus(std::string_view title, const std::vector<std::s
 }
 
 const Bus* TransportCatalogue::GetBus(std::string_view title) const {
-    if (!buses_index_.contains(std::string{title})) {
+    auto bus_it = buses_index_.find(title);
+
+    if (bus_it != buses_index_.end()) {
         return nullptr;
     }
 
-    return buses_index_.at(std::string{title});
+    return bus_it->second;
 }
 
 std::optional<BusStats> TransportCatalogue::GetBusStats(std::string_view title) const {
-    if (!buses_index_.contains(title)) {
+    auto bus_it = buses_index_.find(title);
+
+    if (bus_it != buses_index_.end()) {
         return  std::nullopt;
     }
 
-    const Bus* bus = buses_index_.at(title);
+    const Bus* bus = bus_it->second;
     std::vector<const Stop*> stops = bus->stops;
 
     if(stops.size() == 1) {
@@ -67,7 +71,7 @@ std::optional<BusStats> TransportCatalogue::GetBusStats(std::string_view title) 
         uniq_stops.insert(stops[i]->title);
 
         geo_length += ComputeDistance(stops[i]->coords, stops[i+1]->coords);
-        stats.route_length += GetDistance({stops[i]->title, stops[i+1]->title});
+        stats.route_length += GetDistance(stops[i]->title, stops[i+1]->title);
     }
 
     stats.stops_amount = bus->stops.size();
@@ -84,11 +88,13 @@ TransportCatalogue::GetBusesOfStop(std::string_view title) const {
 }
 
 const Stop* TransportCatalogue::GetStop(std::string_view title) const {
-    if (!stops_index_.contains(std::string{title})) {
+    auto stop_it = stops_index_.find(title);
+
+    if (stop_it == stops_index_.end()) {
         return nullptr;
     }
 
-    return stops_index_.at(std::string{title});
+    return stop_it->second;
 }
 
 const std::deque<Stop>& TransportCatalogue::GetStops() {
@@ -99,14 +105,14 @@ const std::deque<Bus>& TransportCatalogue::GetBuses() {
     return buses_;
 }
 
-int TransportCatalogue::GetDistance(const std::pair<std::string, std::string> &stops_pair) const
+int TransportCatalogue::GetDistance(const std::string& from, const std::string& to) const
 {
-    if (stops_to_distance_.contains(stops_pair)) {
-        return stops_to_distance_.at(stops_pair);
-    } else if (stops_pair.first == stops_pair.second) {
+    if (stops_to_distance_.contains({from, to})) {
+        return stops_to_distance_.at({from, to});
+    } else if (from == to) {
         return 0;
-    } else if (stops_to_distance_.contains({stops_pair.second, stops_pair.first})) {
-        return stops_to_distance_.at({stops_pair.second, stops_pair.first});
+    } else if (stops_to_distance_.contains({to, from})) {
+        return stops_to_distance_.at({to, from});
     } else {
         throw std::out_of_range{"Can't find distance"};
     }

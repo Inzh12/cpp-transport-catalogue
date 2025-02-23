@@ -15,9 +15,11 @@ namespace transport_catalogue {
     public:
         void AddStop(std::string_view title, geo::Coordinates coords);
 
-        void SetStopsDistance(std::string_view stop1, std::string_view stop2, int distance);
+        void SetStopsDistance(std::string_view from, std::string_view to, int distance);
 
         void AddBus(std::string_view title, const std::vector<std::string_view>& stops, bool is_roundtrip);
+
+        int GetDistance(const std::string& from, const std::string& to) const;
 
         const Bus* GetBus(std::string_view title) const;
         std::optional<BusStats> GetBusStats(std::string_view title) const;
@@ -27,8 +29,6 @@ namespace transport_catalogue {
         const std::deque<Stop>& GetStops();
         const std::deque<Bus>& GetBuses();
     private:
-        int GetDistance(const std::pair<std::string, std::string>& stops_pair) const;
-
         std::deque<Stop> stops_;
         std::deque<Bus> buses_;
 

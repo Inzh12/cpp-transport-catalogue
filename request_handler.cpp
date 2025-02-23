@@ -1,7 +1,5 @@
 #include "request_handler.h"
-
 #include <algorithm>
-#include <ostream>
 
 namespace transport_catalogue {
 
